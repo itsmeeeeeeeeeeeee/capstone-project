@@ -1,0 +1,675 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f5f0;}
+.app-root{position:relative;max-width:420px;margin:0 auto;}
+.shell{background:#fff;min-height:860px;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+.hdr{padding:14px 18px 10px;border-bottom:1px solid rgba(0,0,0,0.07);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.hdr-left h2{font-size:17px;font-weight:500;color:#111;}
+.hdr-left p{font-size:12px;color:#888;margin-top:1px;}
+.hdr-avatar{width:34px;height:34px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#085041;flex-shrink:0;}
+.page-scroll{flex:1;overflow-y:auto;}
+.page{display:none;}
+.page.active{display:block;}
+.tab-bar{display:flex;border-top:1px solid rgba(0,0,0,0.08);background:#fff;padding-bottom:4px;flex-shrink:0;}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 6px;cursor:pointer;border:none;background:none;color:#aaa;font-size:10px;font-family:inherit;transition:color 0.15s;}
+.tab-item.active{color:#1D9E75;}
+
+/* MAIN */
+.hero{padding:32px 20px 20px;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.hero-label{font-size:13px;color:#888;}
+.search-wrap{width:100%;margin-top:16px;position:relative;}
+.search-input{width:100%;padding:13px 46px 13px 16px;font-size:14px;color:#111;background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:50px;outline:none;font-family:inherit;transition:border-color 0.15s,background 0.15s;}
+.search-input:focus{border-color:#1D9E75;background:#fff;}
+.search-input::placeholder{color:#aaa;}
+.search-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:#1D9E75;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.quick-tags{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;padding:0 20px 20px;}
+.qtag{padding:6px 14px;border-radius:20px;border:1px solid #e0e0e0;background:#fff;font-size:12px;color:#555;cursor:pointer;font-family:inherit;}
+.qtag:hover{border-color:#1D9E75;color:#0F6E56;background:#f0faf6;}
+.search-results{display:none;padding:0 16px 12px;}
+.search-results.show{display:block;}
+.sr-label{font-size:12px;font-weight:500;color:#888;margin-bottom:8px;}
+.sr-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid rgba(0,0,0,0.08);border-radius:12px;margin-bottom:8px;cursor:pointer;background:#fff;}
+.sr-item:hover{border-color:#5DCAA5;}
+.sr-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sr-name{font-size:14px;font-weight:500;color:#111;}
+.sr-cat{font-size:11px;color:#888;margin-top:2px;}
+.sec-div{height:1px;background:rgba(0,0,0,0.06);margin:0 16px 18px;}
+.notice-banner{margin:0 16px 18px;padding:12px 14px;border-radius:12px;background:#FAEEDA;border:1px solid #FAC775;display:flex;gap:10px;align-items:center;}
+.notice-icon{flex-shrink:0;width:28px;height:28px;border-radius:8px;background:#EF9F27;display:flex;align-items:center;justify-content:center;}
+.notice-text h4{font-size:13px;font-weight:500;color:#633806;}
+.notice-text p{font-size:11px;color:#854F0B;margin-top:2px;}
+.today-section{padding:0 16px 24px;}
+.today-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.today-badge{font-size:11px;padding:3px 9px;border-radius:10px;background:#E1F5EE;color:#085041;font-weight:500;}
+.today-refresh{background:none;border:none;cursor:pointer;color:#aaa;font-size:12px;display:flex;align-items:center;gap:4px;font-family:inherit;padding:4px 8px;border-radius:8px;}
+.today-refresh:hover{background:#f5f5f5;}
+.today-card{border:1.5px solid #e0e0e0;border-radius:16px;overflow:hidden;}
+.today-card-top{padding:18px 18px 14px;display:flex;gap:14px;align-items:flex-start;}
+.drug-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.drug-name{font-size:17px;font-weight:500;color:#111;}
+.drug-eng{font-size:12px;color:#aaa;margin-top:3px;}
+.drug-cat-pill{display:inline-block;margin-top:8px;font-size:11px;padding:3px 10px;border-radius:10px;font-weight:500;}
+.today-card-body{padding:0 18px 16px;}
+.easy-explain{font-size:14px;color:#333;line-height:1.65;}
+.easy-explain strong{color:#0F6E56;font-weight:500;}
+.today-card-tags{padding:12px 18px;border-top:1px solid rgba(0,0,0,0.07);display:flex;gap:6px;flex-wrap:wrap;}
+.info-tag{display:flex;align-items:center;gap:5px;font-size:12px;padding:5px 11px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);color:#555;background:#fafafa;}
+.today-card-footer{padding:10px 18px 14px;border-top:1px solid rgba(0,0,0,0.07);display:flex;gap:8px;}
+.footer-btn{flex:1;padding:10px;border-radius:10px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;border:1px solid #e0e0e0;background:#fff;color:#555;}
+.footer-btn:hover{background:#f5f5f5;}
+.footer-btn.primary{background:#1D9E75;color:#fff;border-color:#1D9E75;}
+.footer-btn.primary:hover{background:#0F6E56;}
+
+/* ALARM */
+.month-nav{display:flex;align-items:center;padding:12px 14px 6px;}
+.mnav-btn{background:none;border:none;cursor:pointer;color:#888;font-size:20px;padding:2px 8px;border-radius:8px;}
+.mnav-btn:hover{background:#f0f0f0;}
+.month-label{flex:1;text-align:center;font-size:15px;font-weight:500;color:#111;}
+.cal-grid{padding:0 12px 8px;}
+.cal-week-labels{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
+.cal-wl{text-align:center;font-size:11px;color:#999;padding:3px 0;}
+.cal-wl.sun{color:#E24B4A;}.cal-wl.sat{color:#378ADD;}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-cell{min-height:46px;border-radius:8px;padding:4px 3px 3px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid transparent;}
+.cal-cell:hover:not(.other-month){background:#f5f5f5;}
+.cal-cell.other-month .cell-num{color:#bbb;}
+.cal-cell.today{background:#1D9E75;}
+.cal-cell.today .cell-num{color:#fff;font-weight:500;}
+.cal-cell.selected:not(.today){border-color:#1D9E75;background:#E1F5EE;}
+.cal-cell.selected:not(.today) .cell-num{color:#085041;}
+.cell-num{font-size:13px;color:#222;line-height:1;}
+.cal-cell.sun-col:not(.today) .cell-num{color:#E24B4A;}
+.cal-cell.sat-col:not(.today) .cell-num{color:#378ADD;}
+.cell-dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;}
+.cell-dot{width:5px;height:5px;border-radius:50%;}
+.summary-bar{margin:4px 14px 10px;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:12px;padding:10px 13px;display:flex;gap:10px;align-items:center;}
+.sum-icon{width:32px;height:32px;border-radius:8px;background:#5DCAA5;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sum-text h3{font-size:13px;font-weight:500;color:#085041;}
+.sum-text p{font-size:11px;color:#0F6E56;margin-top:1px;}
+.sec-title{font-size:12px;font-weight:500;color:#888;padding:2px 16px 8px;}
+.alarm-card{margin:0 14px 10px;border:1px solid rgba(0,0,0,0.1);border-radius:12px;overflow:hidden;background:#fff;cursor:pointer;}
+.alarm-card:hover{border-color:#5DCAA5;}
+.ac-head{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid rgba(0,0,0,0.07);}
+.ac-bar{width:4px;height:34px;border-radius:2px;flex-shrink:0;}
+.ac-info{flex:1;}
+.ac-name{font-size:13px;font-weight:500;color:#111;}
+.ac-sub{font-size:11px;color:#888;margin-top:1px;}
+.toggle{width:38px;height:21px;border-radius:11px;background:#1D9E75;border:none;cursor:pointer;position:relative;flex-shrink:0;}
+.toggle::after{content:'';position:absolute;width:17px;height:17px;background:#fff;border-radius:50%;top:2px;right:2px;}
+.toggle.off{background:#ccc;}
+.toggle.off::after{right:auto;left:2px;}
+.ac-times{padding:8px 13px;display:flex;gap:7px;flex-wrap:wrap;}
+.time-chip-d{display:flex;align-items:center;gap:5px;background:#f5f5f5;border:1px solid #e0e0e0;border-radius:8px;padding:4px 9px;font-size:12px;color:#222;}
+.tcdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.ac-edit-hint{padding:0 13px 9px;font-size:11px;color:#aaa;}
+.add-btn{margin:0 14px 18px;width:calc(100% - 28px);padding:10px;border:1px dashed #ccc;border-radius:12px;background:none;color:#888;font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;}
+.add-btn:hover{background:#f5f5f5;}
+
+/* MYPAGE */
+.profile-section{padding:20px 16px 16px;display:flex;gap:14px;align-items:center;border-bottom:1px solid rgba(0,0,0,0.07);}
+.mp-avatar{width:58px;height:58px;border-radius:50%;background:#E1F5EE;border:2px solid #9FE1CB;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;color:#085041;flex-shrink:0;}
+.profile-info h3{font-size:16px;font-weight:500;color:#111;}
+.profile-info p{font-size:13px;color:#888;margin-top:2px;}
+.profile-badge{display:inline-block;margin-top:6px;font-size:11px;padding:3px 9px;border-radius:10px;background:#E6F1FB;color:#0C447C;}
+.stat-row{display:flex;gap:8px;padding:14px 16px 4px;}
+.stat-card{flex:1;background:#f5f5f5;border-radius:10px;padding:12px 10px;text-align:center;}
+.stat-num{font-size:22px;font-weight:500;color:#111;}
+.stat-label{font-size:11px;color:#888;margin-top:2px;}
+.my-section{padding:0 16px;margin-top:14px;}
+.my-section-title{font-size:12px;font-weight:500;color:#888;margin-bottom:8px;}
+.cg-card{border:1px solid rgba(0,0,0,0.09);border-radius:12px;padding:13px;margin-bottom:10px;background:#fff;}
+.cg-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.cg-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;flex-shrink:0;}
+.cg-info h4{font-size:13px;font-weight:500;color:#111;}
+.cg-info p{font-size:11px;color:#888;}
+.status-pill{font-size:11px;padding:3px 8px;border-radius:10px;margin-left:auto;flex-shrink:0;}
+.pill-green{background:#E1F5EE;color:#085041;}
+.pill-blue{background:#E6F1FB;color:#0C447C;}
+.cg-stats{display:flex;gap:6px;margin-bottom:10px;}
+.cg-stat{flex:1;background:#f5f5f5;border-radius:8px;padding:8px 6px;text-align:center;}
+.cg-stat-num{font-size:17px;font-weight:500;color:#111;}
+.cg-stat-lbl{font-size:10px;color:#888;margin-top:1px;}
+.cg-btns{display:flex;gap:6px;}
+.cg-btn{flex:1;padding:8px 4px;border:1px solid #e0e0e0;border-radius:8px;background:#fff;font-size:12px;color:#555;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px;}
+.cg-btn:hover{background:#f5f5f5;}
+.cg-btn.primary{background:#1D9E75;color:#fff;border-color:#1D9E75;}
+.cg-btn.primary:hover{background:#0F6E56;}
+.my-menu-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid rgba(0,0,0,0.06);cursor:pointer;}
+.my-menu-item:last-child{border-bottom:none;}
+.menu-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.menu-text h4{font-size:14px;font-weight:500;color:#111;}
+.menu-text p{font-size:12px;color:#888;margin-top:1px;}
+.menu-arrow{color:#ccc;font-size:18px;margin-left:auto;}
+.menu-badge{font-size:11px;padding:2px 8px;border-radius:10px;background:#FCEBEB;color:#A32D2D;margin-left:auto;}
+
+/* POPUPS */
+.popup-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.42);z-index:100;align-items:flex-end;justify-content:center;border-radius:12px;}
+.popup-overlay.show{display:flex;}
+.popup-sheet{width:100%;background:#fff;border-radius:16px 16px 0 0;max-height:84vh;display:flex;flex-direction:column;}
+.popup-hdr{display:flex;align-items:center;padding:15px 16px 11px;border-bottom:1px solid rgba(0,0,0,0.08);flex-shrink:0;background:#fff;border-radius:16px 16px 0 0;}
+.popup-hdr h3{flex:1;font-size:15px;font-weight:500;color:#111;}
+.popup-close{background:none;border:none;cursor:pointer;color:#888;font-size:22px;line-height:1;padding:0 4px;}
+.popup-body{overflow-y:auto;padding:16px 16px 24px;flex:1;background:#fff;}
+.field{margin-bottom:15px;}
+.field label{display:block;font-size:12px;font-weight:500;color:#666;margin-bottom:6px;}
+.field input[type=text],.field input[type=time],.field textarea{width:100%;font-size:13px;color:#111;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;padding:9px 11px;font-family:inherit;outline:none;}
+.field input:focus,.field textarea:focus{border-color:#1D9E75;background:#fff;}
+.field textarea{resize:none;height:62px;}
+.day-grid{display:flex;gap:5px;flex-wrap:wrap;}
+.day-chip{height:36px;min-width:36px;padding:0 6px;border-radius:8px;border:1.5px solid #ddd;background:#fff;font-size:12px;color:#666;cursor:pointer;font-family:inherit;}
+.day-chip.on{background:#1D9E75;color:#fff;border-color:#1D9E75;font-weight:500;}
+.seg-group{display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden;}
+.seg-btn{flex:1;padding:9px 4px;border:none;background:#fff;font-size:12px;color:#666;cursor:pointer;font-family:inherit;border-right:1px solid #ddd;}
+.seg-btn:last-child{border-right:none;}
+.seg-btn.on{background:#1D9E75;color:#fff;font-weight:500;}
+.time-add-row{display:flex;gap:8px;align-items:center;}
+.time-add-row input[type=time]{flex:1;font-size:13px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#f5f5f5;color:#111;font-family:inherit;outline:none;}
+.time-add-row input[type=time]:focus{border-color:#1D9E75;background:#fff;}
+.time-add-row button{padding:8px 14px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.time-chips-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;min-height:4px;}
+.time-rm-chip{display:flex;align-items:center;gap:5px;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:8px;padding:5px 9px;font-size:12px;color:#085041;}
+.time-rm-btn{background:none;border:none;cursor:pointer;color:#0F6E56;font-size:15px;line-height:1;padding:0 0 0 3px;font-family:inherit;}
+.person-list{display:flex;flex-direction:column;gap:6px;}
+.person-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1.5px solid #e0e0e0;border-radius:8px;cursor:pointer;background:#fff;}
+.person-row.on{border-color:#1D9E75;background:#E1F5EE;}
+.p-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0;}
+.p-name{flex:1;font-size:13px;font-weight:500;color:#111;}
+.p-role{font-size:11px;color:#888;}
+.p-check{width:18px;height:18px;border-radius:50%;border:1.5px solid #ccc;flex-shrink:0;background:#fff;}
+.person-row.on .p-check{background:#1D9E75;border-color:#1D9E75;}
+.modal-actions{display:flex;gap:8px;margin-top:8px;}
+.save-btn{flex:1;padding:13px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;}
+.save-btn:hover{background:#0F6E56;}
+.del-btn{padding:13px 18px;background:#fff;color:#E24B4A;border:1px solid #F09595;border-radius:12px;font-size:14px;cursor:pointer;font-family:inherit;}
+.del-btn:hover{background:#FCEBEB;}
+.day-alarm-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.07);}
+.day-alarm-row:last-of-type{border-bottom:none;}
+.dbar{width:4px;height:32px;border-radius:2px;flex-shrink:0;}
+.da-info{flex:1;}
+.da-name{font-size:13px;font-weight:500;color:#111;}
+.da-sub{font-size:11px;color:#888;margin-top:1px;}
+.da-time{font-size:12px;color:#888;white-space:nowrap;}
+.da-check{width:22px;height:22px;border-radius:50%;border:1.5px solid #ccc;background:#fff;cursor:pointer;flex-shrink:0;}
+.da-check.done{background:#1D9E75;border-color:#1D9E75;}
+.no-alarm-msg{text-align:center;padding:28px 0;color:#aaa;font-size:13px;}
+.day-add-btn-inner{width:100%;padding:9px;border:1px dashed #ccc;border-radius:12px;background:none;color:#888;font-size:12px;cursor:pointer;font-family:inherit;margin-top:12px;}
+.day-add-btn-inner:hover{background:#f5f5f5;}
+.detail-section{margin-bottom:16px;}
+.detail-section h4{font-size:12px;font-weight:500;color:#888;margin-bottom:6px;}
+.detail-section p{font-size:13px;color:#333;line-height:1.6;}
+.detail-tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.dtag{font-size:12px;padding:4px 11px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);color:#555;background:#fafafa;}
+.warn-box{background:#FCEBEB;border:1px solid #F09595;border-radius:10px;padding:10px 13px;margin-top:8px;}
+.warn-box p{font-size:12px;color:#A32D2D;line-height:1.55;}
+.toast{position:absolute;bottom:72px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:9px 18px;border-radius:20px;font-size:12px;opacity:0;transition:opacity 0.25s;pointer-events:none;white-space:nowrap;z-index:200;}
+.toast.show{opacity:1;}
+</style>
+
+<div class="app-root">
+<div class="shell">
+  <div class="hdr">
+    <div class="hdr-left"><h2 id="hdr-title">약쉬워</h2><p id="hdr-sub">의약품 정보를 쉽고 안전하게</p></div>
+    <div class="hdr-avatar">김</div>
+  </div>
+  <div class="page-scroll" id="page-scroll">
+
+    <!-- MAIN -->
+    <div class="page active" id="page-main">
+      <div class="hero">
+        <span class="hero-label">어떤 약이 궁금하세요?</span>
+        <h1 style="font-size:20px;font-weight:500;color:#111;text-align:center;line-height:1.35;">약 이름을 검색해보세요</h1>
+        <div class="search-wrap">
+          <input class="search-input" id="m-search" type="text" placeholder="예: 타이레놀, 아스피린, 소화제..." autocomplete="off"/>
+          <button class="search-btn" id="m-search-btn"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="#fff" stroke-width="1.5"/><path d="M10 10l3 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        </div>
+      </div>
+      <div class="quick-tags">
+        <button class="qtag" data-q="타이레놀">타이레놀</button>
+        <button class="qtag" data-q="아스피린">아스피린</button>
+        <button class="qtag" data-q="이부프로펜">이부프로펜</button>
+        <button class="qtag" data-q="소화제">소화제</button>
+        <button class="qtag" data-q="알레르기">알레르기</button>
+        <button class="qtag" data-q="위산">위산</button>
+      </div>
+      <div class="search-results" id="m-results">
+        <div class="sr-label" id="m-results-label">검색 결과</div>
+        <div id="m-results-list"></div>
+      </div>
+      <div class="sec-div"></div>
+      <div class="notice-banner">
+        <div class="notice-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M8 12v1.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="notice-text"><h4>복약 전 꼭 확인하세요</h4><p>이 앱의 정보는 참고용이며, 정확한 복약은 의사·약사와 상담하세요.</p></div>
+      </div>
+      <div class="today-section">
+        <div class="today-hdr">
+          <span class="today-badge">오늘의 약</span>
+          <button class="today-refresh" id="today-refresh"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M11 6.5A4.5 4.5 0 112.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M2.5 1.5v2.5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> 다른 약 보기</button>
+        </div>
+        <div class="today-card" id="today-card"></div>
+      </div>
+    </div>
+
+    <!-- CHATBOT PLACEHOLDER -->
+    <div class="page" id="page-chatbot">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;gap:14px;">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="8" width="36" height="28" rx="8" stroke="#1D9E75" stroke-width="2"/><path d="M16 22h16M16 30l-8 8" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/></svg>
+        <p style="font-size:15px;font-weight:500;color:#111;">챗봇</p>
+        <p style="font-size:13px;color:#aaa;text-align:center;">의약품 관련 궁금한 점을 물어보세요</p>
+        <p style="font-size:12px;color:#ccc;">준비 중입니다</p>
+      </div>
+    </div>
+
+    <!-- MAP PLACEHOLDER -->
+    <div class="page" id="page-map">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;gap:14px;">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M24 6C17.4 6 12 11.4 12 18c0 10.5 12 24 12 24s12-13.5 12-24c0-6.6-5.4-12-12-12z" stroke="#1D9E75" stroke-width="2"/><circle cx="24" cy="18" r="4" stroke="#1D9E75" stroke-width="2"/></svg>
+        <p style="font-size:15px;font-weight:500;color:#111;">지도</p>
+        <p style="font-size:13px;color:#aaa;text-align:center;">근처 약국 및 재고를 확인하세요</p>
+        <p style="font-size:12px;color:#ccc;">준비 중입니다</p>
+      </div>
+    </div>
+
+    <!-- ALARM -->
+    <div class="page" id="page-alarm">
+      <div class="month-nav">
+        <button class="mnav-btn" id="a-prev">‹</button>
+        <span class="month-label" id="a-month-label"></span>
+        <button class="mnav-btn" id="a-next">›</button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-week-labels">
+          <div class="cal-wl sun">일</div><div class="cal-wl">월</div><div class="cal-wl">화</div>
+          <div class="cal-wl">수</div><div class="cal-wl">목</div><div class="cal-wl">금</div><div class="cal-wl sat">토</div>
+        </div>
+        <div class="cal-days" id="a-cal-days"></div>
+      </div>
+      <div class="summary-bar">
+        <div class="sum-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="#085041" stroke-width="1.3"/><path d="M8 5.5V8.5l1.5 1" stroke="#085041" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+        <div class="sum-text"><h3 id="a-sum-title">로딩 중...</h3><p id="a-sum-sub"></p></div>
+      </div>
+      <div class="sec-title">전체 알람 목록 <span id="a-alarm-count" style="color:#1D9E75;"></span></div>
+      <div id="a-alarm-list"></div>
+      <button class="add-btn" id="a-add-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        새 알람 추가
+      </button>
+    </div>
+
+    <!-- MYPAGE -->
+    <div class="page" id="page-mypage">
+      <div class="profile-section">
+        <div class="mp-avatar">김</div>
+        <div class="profile-info">
+          <h3>김민준</h3>
+          <p>010-1234-5678 · 만 54세</p>
+          <span class="profile-badge">고혈압 · 당뇨 관리 중</span>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num" style="color:#1D9E75;" id="mp-med-count">3</div><div class="stat-label">복용 의약품</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#378ADD;">92%</div><div class="stat-label">이번달 복용률</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#BA7517;">2</div><div class="stat-label">연결 보호자</div></div>
+      </div>
+      <div class="my-section" style="margin-top:16px;">
+        <div class="my-section-title">보호자 원격 관리</div>
+        <div class="cg-card">
+          <div class="cg-hdr">
+            <div class="cg-avatar" style="background:#E6F1FB;color:#0C447C;">김</div>
+            <div class="cg-info"><h4>김지수 (딸)</h4><p>마지막 확인: 오늘 오전 9:12</p></div>
+            <span class="status-pill pill-green">연결됨</span>
+          </div>
+          <div class="cg-stats">
+            <div class="cg-stat"><div class="cg-stat-num">3/3</div><div class="cg-stat-lbl">오늘 복용</div></div>
+            <div class="cg-stat"><div class="cg-stat-num">92%</div><div class="cg-stat-lbl">이번달</div></div>
+            <div class="cg-stat"><div class="cg-stat-num">D-8</div><div class="cg-stat-lbl">약 잔량</div></div>
+          </div>
+          <div class="cg-btns">
+            <button class="cg-btn" onclick="showToast('복용 기록 화면으로 이동합니다')">복용 기록 보기</button>
+            <button class="cg-btn primary" onclick="showToast('김지수님에게 알림을 보냈습니다')">알림 보내기</button>
+          </div>
+        </div>
+        <div class="cg-card">
+          <div class="cg-hdr">
+            <div class="cg-avatar" style="background:#FAEEDA;color:#854F0B;">박</div>
+            <div class="cg-info"><h4>박세환 (아들)</h4><p>마지막 확인: 어제 오후 8:30</p></div>
+            <span class="status-pill pill-blue">연결됨</span>
+          </div>
+          <div class="cg-stats">
+            <div class="cg-stat"><div class="cg-stat-num">2/3</div><div class="cg-stat-lbl">오늘 복용</div></div>
+            <div class="cg-stat"><div class="cg-stat-num">85%</div><div class="cg-stat-lbl">이번달</div></div>
+            <div class="cg-stat"><div class="cg-stat-num">D-3</div><div class="cg-stat-lbl">약 잔량</div></div>
+          </div>
+          <div class="cg-btns">
+            <button class="cg-btn" onclick="showToast('복용 기록 화면으로 이동합니다')">복용 기록 보기</button>
+            <button class="cg-btn primary" onclick="showToast('박세환님에게 알림을 보냈습니다')">알림 보내기</button>
+          </div>
+        </div>
+      </div>
+      <div class="my-section" style="margin-top:14px;">
+        <div class="my-section-title">내 의약품 관리</div>
+        <div class="my-menu-item" onclick="showToast('복용 중인 의약품 화면으로 이동합니다')">
+          <div class="menu-icon" style="background:#E1F5EE;"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="3" stroke="#0F6E56" stroke-width="1.3"/><path d="M9 6v6M6 9h6" stroke="#0F6E56" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+          <div class="menu-text"><h4>복용 중인 의약품</h4><p id="mp-drug-label">현재 3종 등록됨</p></div>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="my-menu-item" onclick="showToast('복용 기록 통계 화면으로 이동합니다')">
+          <div class="menu-icon" style="background:#E6F1FB;"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 14l3-3 3 3 4-8" stroke="#185FA5" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="menu-text"><h4>복용 기록 / 통계</h4><p>월별 복용 현황 확인</p></div>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="my-menu-item" onclick="openAllergyPopup()">
+          <div class="menu-icon" style="background:#FCEBEB;"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" stroke="#E24B4A" stroke-width="1.3"/><path d="M9 6v4M9 12v.5" stroke="#E24B4A" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+          <div class="menu-text"><h4>알레르기 · 부작용 등록</h4><p>2개 항목 등록됨</p></div>
+          <span class="menu-badge">주의</span>
+        </div>
+      </div>
+      <div class="my-section" style="margin-top:14px;margin-bottom:20px;">
+        <div class="my-section-title">설정</div>
+        <div class="my-menu-item" onclick="showToast('알람 설정 화면으로 이동합니다')">
+          <div class="menu-icon" style="background:#f5f5f5;"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="3" stroke="#888" stroke-width="1.3"/><path d="M9 2v2M9 14v2M2 9h2M14 9h2" stroke="#888" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+          <div class="menu-text"><h4>알람 설정</h4><p>소리, 진동, 반복 주기</p></div>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="my-menu-item" onclick="showToast('개인정보 보호 설정으로 이동합니다')">
+          <div class="menu-icon" style="background:#f5f5f5;"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2l6 3v4c0 4-3 6.5-6 7C6 15.5 3 13 3 9V5z" stroke="#888" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
+          <div class="menu-text"><h4>개인정보 보호</h4><p>데이터 관리 및 보안</p></div>
+          <span class="menu-arrow">›</span>
+        </div>
+        <div class="my-menu-item" onclick="showToast('로그아웃 되었습니다')">
+          <div class="menu-icon" style="background:#f5f5f5;"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 12l3-3-3-3M14 9H7M9 3H4a1 1 0 00-1 1v10a1 1 0 001 1h5" stroke="#888" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="menu-text"><h4>로그아웃</h4><p></p></div>
+          <span class="menu-arrow">›</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-scroll -->
+
+  <div class="tab-bar">
+    <button class="tab-item active" data-tab="main"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8.5l8-6 8 6V19a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 013 19z" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 20.5v-7h5v7" stroke-linecap="round" stroke-linejoin="round"/></svg>메인</button>
+    <button class="tab-item" data-tab="chatbot"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 14a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h12a2 2 0 012 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>챗봇</button>
+    <button class="tab-item" data-tab="map"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 9c0 6.5-8 12-8 12S3 15.5 3 9a8 8 0 0116 0z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="9" r="2.5"/></svg>지도</button>
+    <button class="tab-item" data-tab="alarm"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 7a5.5 5.5 0 00-11 0c0 6.5-2.5 8.5-2.5 8.5h16s-2.5-2-2.5-8.5M12.5 19.5a1.5 1.5 0 01-3 0" stroke-linecap="round" stroke-linejoin="round"/></svg>알람</button>
+    <button class="tab-item" data-tab="mypage"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18.5 19v-1.5a4 4 0 00-4-4h-7a4 4 0 00-4 4V19" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="7" r="3.5"/></svg>마이페이지</button>
+  </div>
+</div>
+
+<!-- POPUPS -->
+<div class="popup-overlay" id="pop-day"><div class="popup-sheet"><div class="popup-hdr"><h3 id="pop-day-title">복용 알람</h3><button class="popup-close" data-close="pop-day">×</button></div><div class="popup-body" id="pop-day-body"></div></div></div>
+
+<div class="popup-overlay" id="pop-edit">
+  <div class="popup-sheet">
+    <div class="popup-hdr"><h3 id="pop-edit-title">새 알람 추가</h3><button class="popup-close" data-close="pop-edit">×</button></div>
+    <div class="popup-body">
+      <div class="field"><label>약 이름</label><input type="text" id="f-name" placeholder="예: 타이레놀 500mg"/></div>
+      <div class="field"><label>복용 요일</label><div class="day-grid" id="f-day-grid">
+        <button type="button" class="day-chip" data-d="0">일</button><button type="button" class="day-chip on" data-d="1">월</button><button type="button" class="day-chip on" data-d="2">화</button><button type="button" class="day-chip on" data-d="3">수</button><button type="button" class="day-chip on" data-d="4">목</button><button type="button" class="day-chip on" data-d="5">금</button><button type="button" class="day-chip" data-d="6">토</button><button type="button" class="day-chip" data-d="all">매일</button>
+      </div></div>
+      <div class="field"><label>복용 시간</label><div class="time-add-row"><input type="time" id="f-time-input" value="08:00"/><button type="button" id="f-add-time">+ 추가</button></div><div class="time-chips-wrap" id="f-time-chips"></div></div>
+      <div class="field"><label>복용 시기</label><div class="seg-group" id="f-seg-meal"><button type="button" class="seg-btn" data-v="식전">식전</button><button type="button" class="seg-btn on" data-v="식후">식후</button><button type="button" class="seg-btn" data-v="식사 직전">식사 직전</button><button type="button" class="seg-btn" data-v="무관">무관</button></div></div>
+      <div class="field"><label>복용 간격</label><div class="seg-group" id="f-seg-gap"><button type="button" class="seg-btn" data-v="즉시">즉시</button><button type="button" class="seg-btn on" data-v="30분 후">30분 후</button><button type="button" class="seg-btn" data-v="1시간 후">1시간 후</button><button type="button" class="seg-btn" data-v="2시간 후">2시간 후</button></div></div>
+      <div class="field"><label>복용자 선택</label><div class="person-list" id="f-persons">
+        <div class="person-row on" data-pid="0"><div class="p-avatar" style="background:#E1F5EE;color:#085041;">김</div><div style="flex:1;"><div class="p-name">김민준</div><div class="p-role">본인</div></div><div class="p-check"></div></div>
+        <div class="person-row" data-pid="1"><div class="p-avatar" style="background:#E6F1FB;color:#0C447C;">김</div><div style="flex:1;"><div class="p-name">김지수</div><div class="p-role">딸 (보호자)</div></div><div class="p-check"></div></div>
+        <div class="person-row" data-pid="2"><div class="p-avatar" style="background:#FAEEDA;color:#854F0B;">박</div><div style="flex:1;"><div class="p-name">박세환</div><div class="p-role">아들 (보호자)</div></div><div class="p-check"></div></div>
+      </div></div>
+      <div class="field"><label>메모</label><textarea id="f-memo" placeholder="예: 혈압약, 절대 빠지지 않도록 주의"></textarea></div>
+      <div class="modal-actions"><button type="button" class="save-btn" id="f-save">알람 저장</button><button type="button" class="del-btn" id="f-delete" style="display:none;">삭제</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="popup-overlay" id="pop-drug"><div class="popup-sheet"><div class="popup-hdr"><h3 id="pop-drug-title">약 상세정보</h3><button class="popup-close" data-close="pop-drug">×</button></div><div class="popup-body" id="pop-drug-body"></div></div></div>
+
+<div class="popup-overlay" id="pop-allergy">
+  <div class="popup-sheet">
+    <div class="popup-hdr"><h3>알레르기 · 부작용 등록</h3><button class="popup-close" data-close="pop-allergy">×</button></div>
+    <div class="popup-body">
+      <div style="margin-bottom:14px;padding:12px 14px;background:#FCEBEB;border:1px solid #F09595;border-radius:10px;">
+        <div style="font-size:12px;font-weight:500;color:#A32D2D;margin-bottom:8px;">등록된 항목 (2개)</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#111;">
+            <span>페니실린 계열 항생제</span><span style="font-size:11px;background:#FCEBEB;color:#A32D2D;padding:2px 8px;border-radius:8px;border:1px solid #F09595;">알레르기</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#111;">
+            <span>아스피린 (두드러기 경험)</span><span style="font-size:11px;background:#FAEEDA;color:#854F0B;padding:2px 8px;border-radius:8px;border:1px solid #FAC775;">부작용</span>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>약품명 또는 성분명</label><input type="text" placeholder="예: 페니실린, 이부프로펜"/></div>
+      <div class="field"><label>반응 유형</label><div class="seg-group" id="allergy-seg"><button type="button" class="seg-btn on" data-v="알레르기">알레르기</button><button type="button" class="seg-btn" data-v="부작용">부작용</button><button type="button" class="seg-btn" data-v="금기">금기</button></div></div>
+      <div class="field"><label>증상 메모</label><textarea placeholder="예: 발진, 두드러기, 호흡곤란 등"></textarea></div>
+      <button type="button" class="save-btn" onclick="showToast('알레르기 정보가 저장되었습니다');closePopup('pop-allergy');">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+var TODAY=new Date(2026,3,4);
+var HDR={main:['약쉬워','의약품 정보를 쉽고 안전하게'],chatbot:['챗봇','궁금한 점을 물어보세요'],map:['지도','근처 약국 찾기'],alarm:['알람','복용 일정 관리'],mypage:['마이페이지','내 건강 관리']};
+
+/* TAB */
+document.querySelectorAll('.tab-item').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var tab=btn.getAttribute('data-tab');
+    document.querySelectorAll('.tab-item').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+    document.getElementById('page-'+tab).classList.add('active');
+    document.getElementById('page-scroll').scrollTop=0;
+    var t=HDR[tab]||['약쉬워',''];
+    document.getElementById('hdr-title').textContent=t[0];
+    document.getElementById('hdr-sub').textContent=t[1];
+    if(tab==='alarm'){renderAlarmCalendar();renderAlarmList();updateAlarmSummary();}
+    if(tab==='mypage'){updateMypageStats();}
+  });
+});
+
+/* POPUP */
+function openPopup(id){document.getElementById(id).classList.add('show');}
+function closePopup(id){document.getElementById(id).classList.remove('show');}
+window.closePopup=closePopup;
+document.querySelectorAll('.popup-close').forEach(function(btn){btn.addEventListener('click',function(){closePopup(btn.getAttribute('data-close'));});});
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2200);}
+window.showToast=showToast;
+
+/* ── DRUG DB ── */
+var DRUGS=[
+  {id:0,name:'타이레놀',eng:'Acetaminophen 500mg',cat:'해열진통제',catColor:'#E1F5EE',catText:'#085041',iconBg:'#E1F5EE',iconStroke:'#085041',iconPath:'M9 3h4M11 3v12M7 8h8',easy:'머리가 아프거나 열이 날 때 쓰는 약이에요. <strong>위장에 자극이 적어</strong> 공복에도 먹을 수 있어요.',tags:['하루 3~4회','식전·식후 무관','4~6시간 간격'],warn:'술을 드신 날은 피하세요. 간에 무리를 줄 수 있어요.',use:'두통, 치통, 생리통, 발열',caution:'1일 4g 초과 금지',sideEffect:'과다복용 시 간 손상'},
+  {id:1,name:'아스피린',eng:'Aspirin 100mg',cat:'항혈전·해열진통제',catColor:'#FCEBEB',catText:'#A32D2D',iconBg:'#FCEBEB',iconStroke:'#A32D2D',iconPath:'M6 11a5 5 0 0010 0 5 5 0 00-10 0M11 6v3',easy:'혈액이 굳는 것을 막아주는 약이에요. <strong>심장병·뇌졸중 예방</strong>을 위해 매일 소량씩 복용해요.',tags:['1일 1회','식후 복용','장기 복용 가능'],warn:'위궤양, 출혈 위험이 있는 분은 의사와 상담하세요.',use:'심혈관 질환 예방, 두통, 발열',caution:'공복 복용 금지',sideEffect:'위장 출혈, 이명'},
+  {id:2,name:'이부프로펜',eng:'Ibuprofen 200mg',cat:'소염진통제',catColor:'#E6F1FB',catText:'#0C447C',iconBg:'#E6F1FB',iconStroke:'#185FA5',iconPath:'M5 11h12M11 5v12',easy:'염증과 통증을 함께 줄여주는 약이에요. <strong>붓기가 있는 통증</strong>에 특히 효과적이에요.',tags:['하루 3회','반드시 식후','6~8시간 간격'],warn:'임산부, 신장이 약한 분은 피하세요.',use:'관절통, 근육통, 생리통, 치통',caution:'공복 복용 금지',sideEffect:'위장 장애, 두통'},
+  {id:3,name:'가스모틴',eng:'Mosapride 5mg',cat:'소화기능 개선제',catColor:'#FAEEDA',catText:'#633806',iconBg:'#FAEEDA',iconStroke:'#854F0B',iconPath:'M7 8c0-2.2 1.8-4 4-4s4 1.8 4 4c0 3-4 7-4 7s-4-4-4-7z',easy:'음식이 위에서 잘 넘어가도록 도와주는 약이에요. <strong>더부룩함, 조기 포만감</strong>을 줄여줘요.',tags:['1일 3회','식전 30분','규칙적 복용'],warn:'심장 부정맥 약과 함께 드시는 분은 상담하세요.',use:'소화불량, 위장 운동 저하',caution:'식전 30분 복용',sideEffect:'설사, 복통'},
+  {id:4,name:'세티리진',eng:'Cetirizine 10mg',cat:'항히스타민제',catColor:'#EEEDFE',catText:'#3C3489',iconBg:'#EEEDFE',iconStroke:'#534AB7',iconPath:'M4 11a7 7 0 0114 0M11 4v3',easy:'알레르기 반응을 억제해주는 약이에요. <strong>콧물, 재채기, 두드러기</strong>를 가라앉혀요.',tags:['1일 1회','저녁 복용 권장','물과 함께'],warn:'운전이나 기계 작동 시 주의하세요. 졸음이 올 수 있어요.',use:'알레르기 비염, 두드러기, 가려움',caution:'신장 기능 저하 시 용량 조절',sideEffect:'졸음, 구강 건조'},
+  {id:5,name:'오메프라졸',eng:'Omeprazole 20mg',cat:'위산억제제',catColor:'#EAF3DE',catText:'#27500A',iconBg:'#EAF3DE',iconStroke:'#3B6D11',iconPath:'M5 9a6 6 0 0112 0v1H5V9zM8 13h6M9 16h4',easy:'위산을 줄여주는 약이에요. <strong>속쓰림, 위염, 역류성 식도염</strong> 치료에 사용돼요.',tags:['1일 1~2회','식전 공복','4~8주 복용'],warn:'장기 복용 시 마그네슘·비타민 B12 부족이 생길 수 있어요.',use:'위궤양, 역류성 식도염',caution:'식전 30분~1시간 복용',sideEffect:'두통, 설사'}
+];
+var DB_KEYS={'타이레놀':[0],'해열':[0,2],'진통':[0,1,2],'아스피린':[1],'혈전':[1],'혈압':[1],'이부프로펜':[2],'소염':[2],'관절':[2],'소화제':[3],'가스모틴':[3],'위장':[3,5],'소화':[3,5],'알레르기':[4],'세티리진':[4],'콧물':[4],'두드러기':[4],'오메프라졸':[5],'위산':[5],'속쓰림':[5],'역류':[5]};
+
+function drugSearch(q){
+  q=q.trim().toLowerCase();if(!q)return[];
+  var ids=[],found=[];
+  DRUGS.forEach(function(d){if((d.name+d.eng+d.cat).toLowerCase().indexOf(q)>=0&&ids.indexOf(d.id)<0){ids.push(d.id);found.push(d);}});
+  Object.keys(DB_KEYS).forEach(function(k){if(k.indexOf(q)>=0||q.indexOf(k)>=0){DB_KEYS[k].forEach(function(i){if(ids.indexOf(i)<0){ids.push(i);found.push(DRUGS[i]);}});}});
+  return found;
+}
+function renderSearchResults(q){
+  var res=drugSearch(q),el=document.getElementById('m-results');
+  if(!q.trim()){el.classList.remove('show');return;}
+  el.classList.add('show');
+  document.getElementById('m-results-label').textContent='"'+q+'" 검색 결과 '+(res.length?res.length+'건':'없음');
+  var list=document.getElementById('m-results-list');
+  list.innerHTML=res.length?res.map(function(d){return '<div class="sr-item" data-did="'+d.id+'"><div class="sr-icon" style="background:'+d.iconBg+';"><svg width="18" height="18" viewBox="0 0 22 22" fill="none"><path d="'+d.iconPath+'" stroke="'+d.iconStroke+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div style="flex:1;"><div class="sr-name">'+d.name+'</div><div class="sr-cat">'+d.cat+'</div></div><span style="color:#ccc;font-size:16px;">›</span></div>';}).join(''):'<div style="text-align:center;padding:18px;color:#aaa;font-size:13px;">일치하는 의약품이 없습니다</div>';
+  list.querySelectorAll('.sr-item').forEach(function(el){el.addEventListener('click',function(){openDrugDetail(parseInt(el.getAttribute('data-did')));});});
+}
+document.getElementById('m-search').addEventListener('input',function(){renderSearchResults(this.value);});
+document.getElementById('m-search').addEventListener('keydown',function(e){if(e.key==='Enter')renderSearchResults(this.value);});
+document.getElementById('m-search-btn').addEventListener('click',function(){renderSearchResults(document.getElementById('m-search').value);});
+document.querySelectorAll('.qtag').forEach(function(btn){btn.addEventListener('click',function(){var q=btn.getAttribute('data-q');document.getElementById('m-search').value=q;renderSearchResults(q);document.getElementById('page-scroll').scrollTop=90;});});
+
+function openDrugDetail(id){
+  var d=DRUGS[id];
+  document.getElementById('pop-drug-title').textContent=d.name+' 상세정보';
+  document.getElementById('pop-drug-body').innerHTML=
+    '<div class="detail-section"><h4>쉬운 설명</h4><p>'+d.easy.replace(/<\/?strong>/g,'')+'</p></div>'
+    +'<div class="detail-section"><h4>주요 효능·효과</h4><p>'+d.use+'</p></div>'
+    +'<div class="detail-section"><h4>복용법</h4><div class="detail-tag-row">'+d.tags.map(function(t){return '<span class="dtag">'+t+'</span>';}).join('')+'</div><p style="margin-top:8px;font-size:13px;color:#555;">'+d.caution+'</p></div>'
+    +'<div class="detail-section"><h4>주의사항</h4><div class="warn-box"><p>'+d.warn+'</p></div></div>'
+    +'<div class="detail-section"><h4>주요 부작용</h4><p>'+d.sideEffect+'</p></div>';
+  openPopup('pop-drug');
+}
+
+var todayIdx=Math.floor(Math.random()*DRUGS.length);
+function renderTodayCard(){
+  var d=DRUGS[todayIdx];
+  document.getElementById('today-card').innerHTML=
+    '<div class="today-card-top"><div class="drug-icon-wrap" style="background:'+d.iconBg+';"><svg width="24" height="24" viewBox="0 0 22 22" fill="none"><path d="'+d.iconPath+'" stroke="'+d.iconStroke+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+    +'<div><div class="drug-name">'+d.name+'</div><div class="drug-eng">'+d.eng+'</div><span class="drug-cat-pill" style="background:'+d.catColor+';color:'+d.catText+';">'+d.cat+'</span></div></div>'
+    +'<div class="today-card-body"><p class="easy-explain">'+d.easy+'</p></div>'
+    +'<div class="today-card-tags">'+d.tags.map(function(t){return '<div class="info-tag"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#1D9E75" stroke-width="1.2"/><path d="M6 4v2.5l1.5 1" stroke="#1D9E75" stroke-width="1.2" stroke-linecap="round"/></svg>'+t+'</div>';}).join('')+'</div>'
+    +'<div class="today-card-footer"><button class="footer-btn" id="td-detail">자세히 보기</button><button class="footer-btn primary" id="td-search">이 약 검색</button></div>';
+  document.getElementById('td-detail').addEventListener('click',function(){openDrugDetail(d.id);});
+  document.getElementById('td-search').addEventListener('click',function(){document.getElementById('m-search').value=d.name;renderSearchResults(d.name);document.getElementById('page-scroll').scrollTop=0;});
+}
+document.getElementById('today-refresh').addEventListener('click',function(){var ni;do{ni=Math.floor(Math.random()*DRUGS.length);}while(ni===todayIdx&&DRUGS.length>1);todayIdx=ni;renderTodayCard();});
+renderTodayCard();
+
+/* ── ALARM ── */
+var alarms=[
+  {id:1,name:'타이레놀 500mg',days:[1,2,3,4,5],times:['오전 8:00','오후 12:00','오후 6:00'],meal:'식후',gap:'30분 후',persons:[0],memo:'',color:'#1D9E75',enabled:true},
+  {id:2,name:'가스활명수큐액',days:[1,2,3,4,5],times:['오전 7:30','오후 12:30'],meal:'식사 직전',gap:'즉시',persons:[0],memo:'',color:'#378ADD',enabled:true},
+  {id:3,name:'아스피린프로텍트',days:[0,1,2,3,4,5,6],times:['오전 9:00'],meal:'식후',gap:'즉시',persons:[0,1],memo:'혈압약 주의',color:'#BA7517',enabled:false}
+];
+var nextId=4,colorIdx=0,editingId=null,doneMap={};
+var COLORS=['#1D9E75','#378ADD','#BA7517','#7F77DD','#E24B4A','#639922'];
+var viewY=TODAY.getFullYear(),viewM=TODAY.getMonth(),selDate=new Date(TODAY);
+
+function dkey(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function alarmsForDow(dow){return alarms.filter(function(a){return a.enabled&&a.days.indexOf(dow)>=0;});}
+
+function renderAlarmCalendar(){
+  var months=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('a-month-label').textContent=viewY+'년 '+months[viewM];
+  var first=new Date(viewY,viewM,1),last=new Date(viewY,viewM+1,0),startDow=first.getDay();
+  var total=startDow+last.getDate(),cells=total%7===0?total:total+(7-total%7);
+  var grid=document.getElementById('a-cal-days');grid.innerHTML='';
+  for(var i=0;i<cells;i++){
+    var dn=i-startDow+1,cd=new Date(viewY,viewM,dn),isOther=dn<1||dn>last.getDate(),dow=cd.getDay();
+    var isToday=!isOther&&cd.toDateString()===TODAY.toDateString(),isSel=!isOther&&cd.toDateString()===selDate.toDateString();
+    var cls='cal-cell'+(isOther?' other-month':'')+(isToday?' today':'')+(isSel&&!isToday?' selected':'')+(dow===0?' sun-col':'')+(dow===6?' sat-col':'');
+    var al=isOther?[]:alarmsForDow(dow);
+    var dots=al.slice(0,4).map(function(a){return '<div class="cell-dot" style="background:'+a.color+';opacity:'+(isToday?0.75:1)+';"></div>';}).join('');
+    var cell=document.createElement('div');cell.className=cls;
+    cell.innerHTML='<span class="cell-num">'+(isOther?'':dn)+'</span><div class="cell-dots">'+dots+'</div>';
+    if(!isOther)(function(d){cell.addEventListener('click',function(){onDateClick(d);});})(new Date(cd));
+    grid.appendChild(cell);
+  }
+}
+function onDateClick(d){
+  selDate=new Date(d);renderAlarmCalendar();updateAlarmSummary();
+  var months=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],days=['일','월','화','수','목','금','토'];
+  document.getElementById('pop-day-title').textContent=months[d.getMonth()]+' '+d.getDate()+'일 ('+days[d.getDay()]+') 복용 알람';
+  renderDayBody(d);openPopup('pop-day');
+}
+function renderDayBody(d){
+  var al=alarmsForDow(d.getDay()),k=dkey(d),body=document.getElementById('pop-day-body');
+  var html=al.length===0?'<div class="no-alarm-msg">이 날 등록된 알람이 없습니다</div>':'';
+  al.forEach(function(a){a.times.forEach(function(t,ti){var mk=k+'-'+a.id+'-'+ti,done=!!doneMap[mk];html+='<div class="day-alarm-row"><div class="dbar" style="background:'+a.color+';"></div><div class="da-info"><div class="da-name">'+a.name+'</div><div class="da-sub">'+a.meal+' · '+a.gap+'</div></div><div class="da-time">'+t+'</div><button class="da-check'+(done?' done':'')+'" data-mk="'+mk+'"></button></div>';});});
+  html+='<button class="day-add-btn-inner" id="day-inner-add">+ 새 알람 추가</button>';
+  body.innerHTML=html;
+  body.querySelectorAll('.da-check').forEach(function(btn){btn.addEventListener('click',function(){var mk=btn.getAttribute('data-mk');doneMap[mk]=!doneMap[mk];btn.classList.toggle('done');updateAlarmSummary();});});
+  var dab=body.querySelector('#day-inner-add');
+  if(dab)dab.addEventListener('click',function(){closePopup('pop-day');openEditModal(null);});
+}
+function updateAlarmSummary(){
+  var al=alarmsForDow(selDate.getDay()),total=0,done=0,k=dkey(selDate);
+  al.forEach(function(a){a.times.forEach(function(t,ti){total++;if(doneMap[k+'-'+a.id+'-'+ti])done++;});});
+  var isToday=selDate.toDateString()===TODAY.toDateString(),ds=isToday?'오늘':(selDate.getMonth()+1)+'월 '+selDate.getDate()+'일';
+  document.getElementById('a-sum-title').textContent=ds+' '+total+'회 복용 예정 ('+done+'/'+total+' 완료)';
+  var next='';
+  outer:for(var i=0;i<al.length;i++)for(var j=0;j<al[i].times.length;j++){if(!doneMap[k+'-'+al[i].id+'-'+j]){next=al[i].times[j]+' · '+al[i].name;break outer;}}
+  document.getElementById('a-sum-sub').textContent=next?'다음 복용: '+next:'모든 복용 완료';
+}
+function renderAlarmList(){
+  var dayNames=['일','월','화','수','목','금','토'],list=document.getElementById('a-alarm-list');
+  document.getElementById('a-alarm-count').textContent='('+alarms.length+'개)';
+  if(!alarms.length){list.innerHTML='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px;">등록된 알람이 없습니다</div>';return;}
+  list.innerHTML='';
+  alarms.forEach(function(a){
+    var ds=a.days.length===7?'매일':a.days.map(function(d){return dayNames[d];}).join(' ');
+    var card=document.createElement('div');card.className='alarm-card';
+    card.innerHTML='<div class="ac-head"><div class="ac-bar" style="background:'+a.color+';"></div><div class="ac-info"><div class="ac-name">'+a.name+'</div><div class="ac-sub">'+a.meal+' · '+a.gap+' · '+ds+'</div></div><button class="toggle'+(a.enabled?'':' off')+'"></button></div><div class="ac-times">'+a.times.map(function(t){return '<div class="time-chip-d"><div class="tcdot" style="background:'+a.color+';"></div>'+t+'</div>';}).join('')+'</div><div class="ac-edit-hint">탭하여 수정</div>';
+    card.querySelector('.toggle').addEventListener('click',function(e){e.stopPropagation();a.enabled=!a.enabled;this.classList.toggle('off');renderAlarmCalendar();updateAlarmSummary();updateMypageStats();});
+    card.addEventListener('click',function(){openEditModal(a.id);});
+    list.appendChild(card);
+  });
+}
+document.getElementById('a-prev').addEventListener('click',function(){viewM--;if(viewM<0){viewM=11;viewY--;}renderAlarmCalendar();});
+document.getElementById('a-next').addEventListener('click',function(){viewM++;if(viewM>11){viewM=0;viewY++;}renderAlarmCalendar();});
+document.getElementById('a-add-btn').addEventListener('click',function(){openEditModal(null);});
+
+function fmtTime(v){var p=v.split(':'),h=parseInt(p[0]),m=parseInt(p[1]);return(h<12?'오전 ':'오후 ')+(h===0?12:h>12?h-12:h)+':'+(m<10?'0':'')+m;}
+function addTimeChip(label){
+  var wrap=document.getElementById('f-time-chips');
+  if(Array.from(wrap.querySelectorAll('.time-rm-chip')).some(function(c){return c.getAttribute('data-label')===label;})){showToast('이미 추가된 시간입니다');return;}
+  var chip=document.createElement('div');chip.className='time-rm-chip';chip.setAttribute('data-label',label);chip.innerHTML=label;
+  var rm=document.createElement('button');rm.type='button';rm.className='time-rm-btn';rm.textContent='×';rm.addEventListener('click',function(){chip.remove();});chip.appendChild(rm);wrap.appendChild(chip);
+}
+function openEditModal(id){
+  editingId=id;var isNew=id===null;
+  document.getElementById('pop-edit-title').textContent=isNew?'새 알람 추가':'알람 수정';
+  document.getElementById('f-delete').style.display=isNew?'none':'block';
+  var a=isNew?null:alarms.find(function(x){return x.id===id;});
+  document.getElementById('f-name').value=a?a.name:'';
+  document.getElementById('f-memo').value=a?a.memo:'';
+  document.querySelectorAll('#f-day-grid .day-chip').forEach(function(c){var d=c.getAttribute('data-d');if(d==='all'){c.classList.remove('on');return;}c.classList.toggle('on',a?a.days.indexOf(parseInt(d))>=0:(parseInt(d)>=1&&parseInt(d)<=5));});
+  document.getElementById('f-time-chips').innerHTML='';
+  if(a)a.times.forEach(function(t){addTimeChip(t);});
+  ['f-seg-meal','f-seg-gap'].forEach(function(gid){var target=gid==='f-seg-meal'?(a?a.meal:'식후'):(a?a.gap:'30분 후');document.querySelectorAll('#'+gid+' .seg-btn').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-v')===target);});});
+  document.querySelectorAll('#f-persons .person-row').forEach(function(r){r.classList.toggle('on',a?a.persons.indexOf(parseInt(r.getAttribute('data-pid')))>=0:r.getAttribute('data-pid')==='0');});
+  document.querySelector('#pop-edit .popup-body').scrollTop=0;
+  openPopup('pop-edit');
+}
+document.getElementById('f-day-grid').addEventListener('click',function(e){var btn=e.target.closest('.day-chip');if(!btn)return;if(btn.getAttribute('data-d')==='all'){var chips=document.querySelectorAll('#f-day-grid .day-chip:not([data-d="all"])');var allOn=Array.from(chips).every(function(c){return c.classList.contains('on');});chips.forEach(function(c){c.classList.toggle('on',!allOn);});}else btn.classList.toggle('on');});
+document.getElementById('f-seg-meal').addEventListener('click',function(e){var b=e.target.closest('.seg-btn');if(!b)return;document.querySelectorAll('#f-seg-meal .seg-btn').forEach(function(x){x.classList.remove('on');});b.classList.add('on');});
+document.getElementById('f-seg-gap').addEventListener('click',function(e){var b=e.target.closest('.seg-btn');if(!b)return;document.querySelectorAll('#f-seg-gap .seg-btn').forEach(function(x){x.classList.remove('on');});b.classList.add('on');});
+document.getElementById('f-persons').addEventListener('click',function(e){var r=e.target.closest('.person-row');if(r)r.classList.toggle('on');});
+document.getElementById('f-add-time').addEventListener('click',function(){var v=document.getElementById('f-time-input').value;if(v)addTimeChip(fmtTime(v));});
+document.getElementById('f-save').addEventListener('click',function(){
+  var name=document.getElementById('f-name').value.trim();
+  if(!name){showToast('약 이름을 입력해 주세요');return;}
+  var chips=document.querySelectorAll('#f-time-chips .time-rm-chip');
+  if(!chips.length){showToast('복용 시간을 하나 이상 추가해 주세요');return;}
+  var days=[];document.querySelectorAll('#f-day-grid .day-chip:not([data-d="all"])').forEach(function(c){if(c.classList.contains('on'))days.push(parseInt(c.getAttribute('data-d')));});
+  if(!days.length){showToast('복용 요일을 선택해 주세요');return;}
+  var times=Array.from(chips).map(function(c){return c.getAttribute('data-label');});
+  var meal=document.querySelector('#f-seg-meal .seg-btn.on').getAttribute('data-v');
+  var gap=document.querySelector('#f-seg-gap .seg-btn.on').getAttribute('data-v');
+  var persons=[];document.querySelectorAll('#f-persons .person-row.on').forEach(function(r){persons.push(parseInt(r.getAttribute('data-pid')));});
+  var memo=document.getElementById('f-memo').value.trim();
+  if(editingId!==null){var a=alarms.find(function(x){return x.id===editingId;});if(a){a.name=name;a.days=days;a.times=times;a.meal=meal;a.gap=gap;a.persons=persons;a.memo=memo;}showToast('알람이 수정되었습니다');}
+  else{alarms.push({id:nextId++,name:name,days:days,times:times,meal:meal,gap:gap,persons:persons,memo:memo,color:COLORS[colorIdx++%COLORS.length],enabled:true});showToast('알람이 저장되었습니다');}
+  closePopup('pop-edit');renderAlarmCalendar();renderAlarmList();updateAlarmSummary();updateMypageStats();
+});
+document.getElementById('f-delete').addEventListener('click',function(){
+  if(editingId===null)return;
+  alarms=alarms.filter(function(a){return a.id!==editingId;});
+  closePopup('pop-edit');renderAlarmCalendar();renderAlarmList();updateAlarmSummary();updateMypageStats();showToast('알람이 삭제되었습니다');
+});
+
+/* ── MYPAGE ── */
+function updateMypageStats(){
+  var enabled=alarms.filter(function(a){return a.enabled;}).length;
+  document.getElementById('mp-med-count').textContent=enabled;
+  document.getElementById('mp-drug-label').textContent='현재 '+enabled+'종 등록됨';
+}
+function openAllergyPopup(){openPopup('pop-allergy');}
+window.openAllergyPopup=openAllergyPopup;
+document.getElementById('allergy-seg').addEventListener('click',function(e){var b=e.target.closest('.seg-btn');if(!b)return;document.querySelectorAll('#allergy-seg .seg-btn').forEach(function(x){x.classList.remove('on');});b.classList.add('on');});
+
+updateMypageStats();
+})();
+</script>
