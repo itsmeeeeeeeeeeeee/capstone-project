@@ -29,42 +29,7 @@ def index():
 
 
 # ─────────────────────────────────────────
-#  OCR API
-# ─────────────────────────────────────────
-
-@app.route("/api/ocr", methods=["POST"])
-def ocr():
-    if "image" not in request.files:
-        return jsonify({"error": "이미지 파일이 없습니다."}), 400
-
-    image_data   = request.files["image"].read()
-    image_base64 = base64.b64encode(image_data).decode("utf-8")
-
-    payload = {
-        "requests": [{
-            "image": {"content": image_base64},
-            "features": [{"type": "TEXT_DETECTION"}],
-            "imageContext": {"languageHints": ["ko", "en"]},
-        }]
-    }
-
-    response = requests.post(VISION_API_URL, json=payload)
-    if response.status_code != 200:
-        return jsonify({"error": f"Google API 오류: {response.text}"}), 500
-
-    try:
-        annotations = response.json()["responses"][0].get("textAnnotations", [])
-        if not annotations:
-            return jsonify({"text": "", "message": "텍스트를 찾을 수 없습니다."})
-        return jsonify({"text": annotations[0]["description"]})
-    except (KeyError, IndexError) as e:
-        return jsonify({"error": f"응답 파싱 오류: {str(e)}"}), 500
-
-
-# ─────────────────────────────────────────
-#  알람 파싱 API
-#  반환: HTML alarms 배열 구조와 호환되는 형식
-#  times 포맷: "오전 8:00", "오후 12:00" 등
+#  내부 헬퍼
 # ─────────────────────────────────────────
 
 def fmt_time_korean(t):
@@ -80,14 +45,8 @@ def fmt_time_korean(t):
         return t
 
 
-@app.route("/api/parse-alarm", methods=["POST"])
-def parse_alarm():
-    body     = request.get_json()
-    ocr_text = body.get("text", "")
-
-    if not ocr_text:
-        return jsonify({"error": "텍스트가 없습니다."}), 400
-
+def _parse_drugs(ocr_text):
+    """OCR 텍스트 → drugs 배열 (parse-alarm / analyze-image 공용)"""
     prompt = f"""다음은 약 봉투(또는 처방전)에서 OCR로 추출한 텍스트야.
 텍스트에 등장하는 모든 의약품을 찾아 각각의 복약 정보를 추출해 아래 형식의 JSON만 반환해.
 다른 말은 절대 하지 마.
@@ -110,7 +69,7 @@ def parse_alarm():
 [name 추출 규칙]
 - 의약품(약) 이름만 추출해. 병원명, 약국명, 환자명, 날짜, 주소는 절대 포함하지 마.
 - 약 이름은 한글/영문 제품명으로 표기되고, "정", "캡슐", "mg", "ml" 같은 단위가 붙는 경우가 많아.
-- 약 이름을 찾을 수 없으면 "복약 알람"으로 써.
+- 약 이름을 특정할 수 없는 항목은 drugs 배열에 포함하지 마.
 
 [times 추출 규칙 - 각 약마다 개별 적용, 24시간 HH:MM 형식]
 - "1일 3회" → ["08:00", "12:00", "18:00"]
@@ -142,47 +101,58 @@ OCR 텍스트:
 
 JSON:"""
 
-    raw = ""
+    res = requests.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "gpt-4o-mini",
+            "max_tokens": 800,
+            "messages": [{"role": "user", "content": prompt}]
+        }
+    )
+    if not res.ok:
+        raise RuntimeError(f"OpenAI 오류: {res.text}")
+
+    raw = res.json()["choices"][0]["message"]["content"].strip()
+    raw = raw.replace("```json", "").replace("```", "").strip()
+    parsed = json.loads(raw)
+
+    drugs = parsed.get("drugs", [])
+    for i, drug in enumerate(drugs):
+        drug["times"]   = [fmt_time_korean(t) for t in drug.get("times", ["08:00"])]
+        drug["color"]   = COLORS[i % len(COLORS)]
+        drug["enabled"] = True
+        drug.setdefault("persons", [0])
+        drug.setdefault("memo", "")
+
+    return drugs
+
+
+# ─────────────────────────────────────────
+#  알람 파싱 API
+# ─────────────────────────────────────────
+
+@app.route("/api/parse-alarm", methods=["POST"])
+def parse_alarm():
+    body     = request.get_json(force=True, silent=True) or {}
+    ocr_text = body.get("text", "")
+
+    if not ocr_text:
+        return jsonify({"error": "텍스트가 없습니다."}), 400
+
     try:
-        res = requests.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENAI_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "gpt-4o-mini",
-                "max_tokens": 800,
-                "messages": [{"role": "user", "content": prompt}]
-            }
-        )
-        if not res.ok:
-            return jsonify({"error": f"OpenAI 오류: {res.text}"}), 500
-
-        raw    = res.json()["choices"][0]["message"]["content"].strip()
-        raw    = raw.replace("```json", "").replace("```", "").strip()
-        parsed = json.loads(raw)
-
-        # times를 HTML 표시 형식("오전 8:00")으로 변환하고 color/enabled 추가
-        drugs = parsed.get("drugs", [])
-        for i, drug in enumerate(drugs):
-            drug["times"] = [fmt_time_korean(t) for t in drug.get("times", ["08:00"])]
-            drug["color"]   = COLORS[i % len(COLORS)]
-            drug["enabled"] = True
-            drug.setdefault("persons", [0])
-            drug.setdefault("memo", "")
-
-        return jsonify({"drugs": drugs})
-
+        return jsonify({"drugs": _parse_drugs(ocr_text)})
     except json.JSONDecodeError:
-        return jsonify({"error": "AI 응답을 JSON으로 파싱할 수 없습니다.", "raw": raw}), 500
+        return jsonify({"error": "AI 응답을 JSON으로 파싱할 수 없습니다."}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 # ─────────────────────────────────────────
 #  이미지 통합 분석 API (OCR + 알람 파싱)
-#  약봉지 사진 한 장으로 알람 데이터 반환
 # ─────────────────────────────────────────
 
 @app.route("/api/analyze-image", methods=["POST"])
@@ -190,18 +160,16 @@ def analyze_image():
     if "image" not in request.files:
         return jsonify({"error": "이미지 파일이 없습니다."}), 400
 
-    # 1) OCR
     image_data   = request.files["image"].read()
     image_base64 = base64.b64encode(image_data).decode("utf-8")
 
-    vision_payload = {
+    vision_res = requests.post(VISION_API_URL, json={
         "requests": [{
             "image": {"content": image_base64},
             "features": [{"type": "TEXT_DETECTION"}],
             "imageContext": {"languageHints": ["ko", "en"]},
         }]
-    }
-    vision_res = requests.post(VISION_API_URL, json=vision_payload)
+    })
     if vision_res.status_code != 200:
         return jsonify({"error": f"Google Vision 오류: {vision_res.text}"}), 500
 
@@ -215,27 +183,21 @@ def analyze_image():
 
     ocr_text = annotations[0]["description"]
 
-    # 2) 알람 파싱 (parse_alarm 로직 재사용)
-    parse_res = requests.post(
-        "http://localhost:5000/api/parse-alarm",
-        json={"text": ocr_text}
-    )
-    if not parse_res.ok:
-        return jsonify({"error": "파싱 오류", "ocr_text": ocr_text}), 500
-
-    result = parse_res.json()
-    result["ocr_text"] = ocr_text
-    return jsonify(result)
+    try:
+        return jsonify({"drugs": _parse_drugs(ocr_text), "ocr_text": ocr_text})
+    except json.JSONDecodeError:
+        return jsonify({"error": "AI 응답을 JSON으로 파싱할 수 없습니다.", "ocr_text": ocr_text}), 500
+    except Exception as e:
+        return jsonify({"error": str(e), "ocr_text": ocr_text}), 500
 
 
 # ─────────────────────────────────────────
 #  챗봇 대화 API
-#  HTML의 BOT_QA 키워드 범주에 맞는 약학 AI 챗봇
 # ─────────────────────────────────────────
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
-    body     = request.get_json()
+    body     = request.get_json(force=True, silent=True) or {}
     messages = body.get("messages", [])
 
     if not messages:
