@@ -14,5 +14,6 @@ async def get_pharmacies(lat: float, lng: float):
 
 @router.get("/waste-bins")
 async def get_bins():
-    # DB에 저장된 폐의약품 수거함 데이터를 반환
-    return [{"place_name": "강남구 보건소", "lat": 37.5173, "lng": 127.0474}]
+    # DB의 waste_bins 테이블에 있는 모든 데이터를 리스트로 가져옵니다.
+    bins = db.query(models.WasteBin).all()
+    return bins
