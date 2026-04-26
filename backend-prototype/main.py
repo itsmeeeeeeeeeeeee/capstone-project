@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import drug, chat, alarm
+from routers import drug, chat, alarm, disposal_alarm
 
 app = FastAPI()
 
