@@ -60,8 +60,8 @@ class DisposalBin(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100))  # 수거함 이름 (예: ㅇㅇ약국, ㅇㅇ보건소)
     address = Column(String(200))  # 도로명 주소
-    latitude = Column(Float)  # 위도 (지도 표시용)
-    longitude = Column(Float)  # 경도 (지도 표시용)
+    lat = Column(Float)  # 위도 (지도 표시용)
+    lng = Column(Float)  # 경도 (지도 표시용)
 
 
 # 5. 복약 알림 테이블
