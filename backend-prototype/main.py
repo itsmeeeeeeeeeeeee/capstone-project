@@ -23,3 +23,4 @@ def root():
 app.include_router(drug.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(alarm.router, prefix="/api")
+app.include_router(map.router, prefix="/api/map", tags=["Map"])
