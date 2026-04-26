@@ -76,6 +76,24 @@ class Alarm(Base):
 
     owner = relationship("User", back_populates="alarms")
 
+# database.py 에 추가
+# 5. [수정됨] 약물 충돌(DUR) 데이터 테이블
+# database.py 수정 예시
+# database.py의 Interaction 클래스 부분
+class Interaction(Base):
+    __tablename__ = "interactions"
+    id = Column(Integer, primary_key=True, index=True)
+    item_a_name = Column(String) 
+    item_b_name = Column(String) 
+    
+    # [추가] 용량을 뺀 깨끗한 이름을 담을 칸입니다.
+    simplified_a = Column(String, index=True)
+    simplified_b = Column(String, index=True)
+    
+    prohibit_content = Column(String) 
+    category = Column(String)
+    target_group = Column(String)
+
 
 # --- [테이블 정의 끝] ---
 
